@@ -35,7 +35,7 @@ services:
       db:
         condition: service_healthy
     ports:
-      - "8082:8080"
+      - "8082:8085"
     networks:
       - lms-net
 
@@ -46,7 +46,7 @@ services:
     container_name: lms-frontend
     restart: always
     ports:
-      - "5173:80"
+      - "5173:8082"
     depends_on:
       - backend
     networks:
@@ -58,3 +58,4 @@ volumes:
 networks:
   lms-net:
     driver: bridge
+
