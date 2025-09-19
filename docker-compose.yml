@@ -6,12 +6,18 @@ services:
     environment:
       MYSQL_DATABASE: lms_backend_db
       MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: lmsuser
+      MYSQL_PASSWORD: lmspass
     ports:
       - "3307:3306"
     volumes:
       - db_data:/var/lib/mysql
     networks:
       - lms-net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      retries: 10
 
   backend:
     build:
@@ -21,8 +27,8 @@ services:
     restart: always
     environment:
       SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/lms_backend_db
-      SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: root
+      SPRING_DATASOURCE_USERNAME: lmsuser
+      SPRING_DATASOURCE_PASSWORD: lmspass
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
     depends_on:
       - db
@@ -40,6 +46,19 @@ services:
     ports:
       - "5173:80"
     depends_on:
+      - backend
+    networks:
+      - lms-net
+
+  nginx:
+    image: nginx:latest
+    container_name: lms-nginx
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+    ports:
+      - "80:80"
+    depends_on:
+      - frontend
       - backend
     networks:
       - lms-net
